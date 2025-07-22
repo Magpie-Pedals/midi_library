@@ -107,18 +107,17 @@ END_MIDI_NAMESPACE
  Example: MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, midi2);
  Then call midi2.begin(), midi2.read() etc..
  */
-#define MIDI_CREATE_INSTANCE(Type, SerialPort, Name)     \
+#define MIDI_CREATE_INSTANCE(SerialPort, Name)           \
     MIDI_NAMESPACE::SerialMIDI serial##Name(SerialPort); \
     MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::SerialMIDI> Name((MIDI_NAMESPACE::SerialMIDI &)serial##Name);
 
-#define MIDI_CREATE_DEFAULT_INSTANCE() \
-    MIDI_CREATE_INSTANCE(uart_inst_t, uart0, uartMidi);
-
 /*! \brief Create an instance of the library attached to a serial port with
- custom settings.
- @see DefaultSettings
- @see MIDI_CREATE_INSTANCE
- */
-#define MIDI_CREATE_CUSTOM_INSTANCE(Type, SerialPort, Name, Settings) \
-    MIDI_NAMESPACE::SerialMIDI serial##Name(SerialPort);              \
+custom settings.
+@see DefaultSettings
+@see MIDI_CREATE_INSTANCE
+*/
+#define MIDI_CREATE_CUSTOM_INSTANCE(SerialPort, Name, Settings) \
+    MIDI_NAMESPACE::SerialMIDI serial##Name(SerialPort);        \
     MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::SerialMIDI, Settings> Name((MIDI_NAMESPACE::SerialMIDI &)serial##Name);
+
+#define MIDI_CREATE_DEFAULT_INSTANCE() MIDI_CREATE_INSTANCE(uart0, uartMidi);

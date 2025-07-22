@@ -107,7 +107,7 @@ END_MIDI_NAMESPACE
 
 #define USBMIDI_TYPE MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::usbMidiTransport>
 
-#define MIDI_CREATE_INSTANCE(CableNr, Name)                \
+#define USBMIDI_CREATE_INSTANCE(CableNr, Name)             \
     MIDI_NAMESPACE::usbMidiTransport __usb##Name(CableNr); \
     MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::usbMidiTransport> Name((MIDI_NAMESPACE::usbMidiTransport &)__usb##Name);
 
@@ -115,5 +115,4 @@ END_MIDI_NAMESPACE
     USBMIDI_NAMESPACE::usbMidiTransport __usb##Name(CableNr);   \
     MIDI_NAMESPACE::MidiInterface<USBMIDI_NAMESPACE::usbMidiTransport, Settings> Name((MIDI_NAMESPACE::usbMidiTransport &)__usb##Name);
 
-#define USBMIDI_CREATE_DEFAULT_INSTANCE() \
-    USBMIDI_CREATE_INSTANCE(0, usbMIDI)
+#define USBMIDI_CREATE_DEFAULT_INSTANCE() USBMIDI_CREATE_INSTANCE(0, usbMIDI)
