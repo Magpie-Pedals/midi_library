@@ -1,7 +1,3 @@
-increase_warning_level()
-
-project(midi)
-
 add_library(midi STATIC
     midi_Namespace.h
     midi_Defs.h
@@ -12,4 +8,14 @@ add_library(midi STATIC
     MIDI.hpp
     MIDI.h
     serialMIDI.h
+    usbMIDI.h
+)
+
+target_link_libraries(midi
+    PUBLIC
+    pico_stdlib
+    hardware_uart
+    hardware_gpio
+    tinyusb_device
+    tinyusb_board
 )

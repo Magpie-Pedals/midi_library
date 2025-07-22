@@ -24,9 +24,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
- #pragma once
+#pragma once
 
 #include "midi_Namespace.h"
+#include <pico/stdlib.h>
+#include <hardware/uart.h>
 
 BEGIN_MIDI_NAMESPACE
 
@@ -37,63 +39,65 @@ struct DefaultSerialSettings
     http://projectgus.github.io/hairless-midiserial/
     */
     static const long BaudRate = 31250;
+    static const uint8_t TxPin = 0;
+    static const uint8_t RxPin = 1;
 };
 
-template <class SerialPort, class _Settings = DefaultSerialSettings>
+template <class _Settings = DefaultSerialSettings>
 class SerialMIDI
 {
     typedef _Settings Settings;
 
 public:
-	SerialMIDI(SerialPort& inSerial)
-        : mSerial(inSerial)
-	{
-	};
+    SerialMIDI(uart_inst_t *inSerial)
+        : mSerial(inSerial) {};
 
 public:
     static const bool thruActivated = true;
-    
+
     void begin()
-	{
-        // Initialise the Serial port
-        #if defined(AVR_CAKE)
-            mSerial. template open<Settings::BaudRate>();
-        #else
-            mSerial.begin(Settings::BaudRate);
-        #endif
-	}
+    {
+        // // Initialise the Serial port
+        // #if defined(AVR_CAKE)
+        //         mSerial.template open<Settings::BaudRate>();
+        // #else
+        //         mSerial.begin(Settings::BaudRate);
+        // #endif
+        uart_init(mSerial, Settings::BaudRate);
+        gpio_set_function(Settings::TxPin, GPIO_FUNC_UART);
+        gpio_set_function(Settings::RxPin, GPIO_FUNC_UART);
+    }
 
     void end()
     {
-        mSerial.end();
+        uart_deinit(mSerial);
     }
 
-	bool beginTransmission(MidiType)
-	{
-		return true;
-	};
+    bool beginTransmission(MidiType)
+    {
+        return true;
+    };
 
-	void write(byte value)
-	{
-		mSerial.write(value);
-	};
+    void write(byte value)
+    {
+        // mSerial.write(value);
+        uart_putc_raw(mSerial, value);
+    };
 
-	void endTransmission()
-	{
-	};
+    void endTransmission() {};
 
-	byte read()
-	{
-		return mSerial.read();
-	};
+    byte read()
+    {
+        return uart_getc(mSerial);
+    };
 
-	unsigned available()
-	{
-        return mSerial.available();
-	};
+    unsigned available()
+    {
+        return uart_is_readable(mSerial);
+    };
 
 private:
-    SerialPort& mSerial;
+    uart_inst_t *mSerial;
 };
 
 END_MIDI_NAMESPACE
@@ -103,28 +107,18 @@ END_MIDI_NAMESPACE
  Example: MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, midi2);
  Then call midi2.begin(), midi2.read() etc..
  */
-#define MIDI_CREATE_INSTANCE(Type, SerialPort, Name)  \
-    MIDI_NAMESPACE::SerialMIDI<Type> serial##Name(SerialPort);\
-    MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::SerialMIDI<Type>> Name((MIDI_NAMESPACE::SerialMIDI<Type>&)serial##Name);
+#define MIDI_CREATE_INSTANCE(Type, SerialPort, Name)     \
+    MIDI_NAMESPACE::SerialMIDI serial##Name(SerialPort); \
+    MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::SerialMIDI> Name((MIDI_NAMESPACE::SerialMIDI &)serial##Name);
 
-#if defined(ARDUINO_SAM_DUE) || defined(USBCON) || defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MKL26Z64__)
-    // Leonardo, Due and other USB boards use Serial1 by default.
-    #define MIDI_CREATE_DEFAULT_INSTANCE()                                      \
-        MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI);
-#else
-    /*! \brief Create an instance of the library with default name, serial port
-    and settings, for compatibility with sketches written with pre-v4.2 MIDI Lib,
-    or if you don't bother using custom names, serial port or settings.
-    */
-    #define MIDI_CREATE_DEFAULT_INSTANCE()                                      \
-        MIDI_CREATE_INSTANCE(HardwareSerial, Serial,  MIDI);
-#endif
+#define MIDI_CREATE_DEFAULT_INSTANCE() \
+    MIDI_CREATE_INSTANCE(uart_inst_t, uart0, uartMidi);
 
 /*! \brief Create an instance of the library attached to a serial port with
  custom settings.
  @see DefaultSettings
  @see MIDI_CREATE_INSTANCE
  */
-#define MIDI_CREATE_CUSTOM_INSTANCE(Type, SerialPort, Name, Settings)           \
-    MIDI_NAMESPACE::SerialMIDI<Type> serial##Name(SerialPort);\
-    MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::SerialMIDI<Type>, Settings> Name((MIDI_NAMESPACE::SerialMIDI<Type>&)serial##Name);
+#define MIDI_CREATE_CUSTOM_INSTANCE(Type, SerialPort, Name, Settings) \
+    MIDI_NAMESPACE::SerialMIDI serial##Name(SerialPort);              \
+    MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::SerialMIDI, Settings> Name((MIDI_NAMESPACE::SerialMIDI &)serial##Name);
