@@ -41,6 +41,8 @@ struct DefaultSerialSettings
     static const long BaudRate = 31250;
     static const uint8_t TxPin = 0;
     static const uint8_t RxPin = 1;
+    static const bool TxFunctionAux = false;
+    static const bool RxFunctionAux = false;
 };
 
 template <class _Settings = DefaultSerialSettings>
@@ -64,8 +66,8 @@ public:
         //         mSerial.begin(Settings::BaudRate);
         // #endif
         uart_init(mSerial, Settings::BaudRate);
-        gpio_set_function(Settings::TxPin, GPIO_FUNC_UART);
-        gpio_set_function(Settings::RxPin, GPIO_FUNC_UART);
+        gpio_set_function(Settings::TxPin, (Settings::TxFunctionAux) ? GPIO_FUNC_UART_AUX : GPIO_FUNC_UART);
+        gpio_set_function(Settings::RxPin, (Settings::RxFunctionAux) ? GPIO_FUNC_UART_AUX : GPIO_FUNC_UART);
     }
 
     void end()
