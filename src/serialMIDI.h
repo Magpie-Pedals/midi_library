@@ -122,4 +122,8 @@ custom settings.
     MIDI_NAMESPACE::SerialMIDI serial##Name(SerialPort);        \
     MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::SerialMIDI, Settings> Name((MIDI_NAMESPACE::SerialMIDI &)serial##Name);
 
+#define MIDI_CREATE_CUSTOM_INSTANCE_EX(SerialPort, Name, MidiSettings, SerialSettings) \
+    MIDI_NAMESPACE::SerialMIDI<SerialSettings> serial##Name(SerialPort);               \
+    MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::SerialMIDI<SerialSettings>, MidiSettings> Name((MIDI_NAMESPACE::SerialMIDI<SerialSettings> &)serial##Name);
+
 #define MIDI_CREATE_DEFAULT_INSTANCE() MIDI_CREATE_INSTANCE(uart0, uartMidi);

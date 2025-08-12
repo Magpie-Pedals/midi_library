@@ -11,6 +11,10 @@ add_library(midi STATIC
     usbMIDI.h
 )
 
+target_include_directories(midi PUBLIC
+    ${CMAKE_CURRENT_LIST_DIR}
+)
+
 target_link_libraries(midi
     PUBLIC
     pico_stdlib
